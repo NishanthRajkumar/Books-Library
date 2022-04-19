@@ -4,8 +4,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from jose import jwt, JWTError
 import uvicorn
+from books_library import BooksDB 
 
 app = FastAPI()
+
+books_db = BooksDB()
 
 library_user = {
     "Nishanth": {
@@ -48,7 +51,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 class Book(BaseModel):
     author: str
     title: str
-    price: float|None  = None
+    published_date: str
+    quantity: int|None  = None
 
 class Token(BaseModel):
     access_token: str
@@ -88,10 +92,10 @@ def retrieve_all_books(current_user: str = Depends(get_current_user)):
         Return:
             A dictionary containing collection of books
     """
-    return f"Books in our library:\n{my_library}"
+    return f"Books in our library: {books_db.get_all_books_from_db()}"
 
-@app.get("/book/{book_title}", tags=['Library books'])
-def retrieve_a_book(book_title: str, response: Response, current_user: str = Depends(get_current_user)):
+@app.get("/book/", tags=['Library books'])
+def retrieve_a_book(book_title: str, current_user: str = Depends(get_current_user)):
     """
         Description:
             Retrieves a book from the library
@@ -103,10 +107,7 @@ def retrieve_a_book(book_title: str, response: Response, current_user: str = Dep
         Return:
             A Book object
     """
-    if book_title in my_library.keys():
-        return my_library[book_title]
-    response.status_code = status.HTTP_404_NOT_FOUND
-    return f"The book '{book_title}' is not in our library"
+    return books_db.get_book_from_db(book_title)
 
 @app.post("/add-book/", status_code=status.HTTP_201_CREATED, tags=['Library books'])
 def add_book_to_library(book_to_add: Book, current_user: str = Depends(get_current_user)):
@@ -120,10 +121,7 @@ def add_book_to_library(book_to_add: Book, current_user: str = Depends(get_curre
         Return:
             A string message
     """
-    if book_to_add.title in my_library.keys():
-        return f"Failed to add the book. Book with title '{book_to_add.title}' already exists in library"
-    my_library[book_to_add.title] = book_to_add
-    return f"Succesfully added the book '{book_to_add.title}' to collection"
+    books_db.add_book_to_db(book_to_add.title, book_to_add.author, book_to_add.published_date, book_to_add.quantity)
 
 @app.put("/update-book/", tags=['Library books'])
 def update_book_info(book_title: str, new_book_info: Book, current_user: str = Depends(get_current_user)):
@@ -168,4 +166,4 @@ def delete_book(book_title: str, current_user: str = Depends(get_current_user)):
     return f"Failed to delete the book '{book_title}'. The book '{book_title}' is not in our library"
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="127.0.0.1", port=8500)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
