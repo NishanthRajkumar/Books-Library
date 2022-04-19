@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from jose import jwt, JWTError
@@ -58,8 +58,6 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-my_library: dict[str, Book] = {}
-
 @app.post("/login", response_model=Token, tags=['Login'])
 def login(formdata: OAuth2PasswordRequestForm = Depends()):
     """
@@ -82,88 +80,23 @@ def login(formdata: OAuth2PasswordRequestForm = Depends()):
 
 @app.get("/", tags=['Library books'])
 def retrieve_all_books(current_user: str = Depends(get_current_user)):
-    """
-        Description:
-            Retrieves all books from the library
-        
-        Parameter:
-            None
-        
-        Return:
-            A dictionary containing collection of books
-    """
     return f"Books in our library: {books_db.get_all_books_from_db()}"
 
 @app.get("/book/", tags=['Library books'])
 def retrieve_a_book(book_title: str, current_user: str = Depends(get_current_user)):
-    """
-        Description:
-            Retrieves a book from the library
-        
-        Parameter:
-            book_title: title of the book to retrieve
-            response: for the http response
-        
-        Return:
-            A Book object
-    """
     return books_db.get_book_from_db(book_title)
 
 @app.post("/add-book/", status_code=status.HTTP_201_CREATED, tags=['Library books'])
 def add_book_to_library(book_to_add: Book, current_user: str = Depends(get_current_user)):
-    """
-        Description:
-            adds a book to the library
-        
-        Parameter:
-            book_to_add: A Book object to add to library
-        
-        Return:
-            A string message
-    """
-    books_db.add_book_to_db(book_to_add.title, book_to_add.author, book_to_add.published_date, book_to_add.quantity)
+    return books_db.add_book_to_db(book_to_add.title, book_to_add.author, book_to_add.published_date, book_to_add.quantity)
 
 @app.put("/update-book/", tags=['Library books'])
 def update_book_info(book_title: str, new_book_info: Book, current_user: str = Depends(get_current_user)):
-    """
-        Description:
-            Updates a book from the library
-        
-        Parameter:
-            book_title: The title of the book to edit
-            new_book_info: A Book object to add to library
-        
-        Return:
-            A string message
-    """
-    if book_title in my_library.keys():
-        if book_title == new_book_info.title:
-            my_library[book_title] = new_book_info
-            return "Succesfully updated the book"
-        if new_book_info.title in my_library.keys():
-            return f"Failed to update! The new book title '{new_book_info.title}' already exists in library"
-        else:
-            my_library[new_book_info.title] = new_book_info
-            my_library.pop(book_title)
-            return f"Succesfully updated the book"
-    return f"Failed to update the book '{book_title}'. The book '{book_title}' is not in our library"
+    return books_db.update_book_in_db(book_title, new_book_info.title, new_book_info.author, new_book_info.published_date, new_book_info.quantity)
 
 @app.delete("/delete-book/", tags=['Library books'])
 def delete_book(book_title: str, current_user: str = Depends(get_current_user)):
-    """
-        Description:
-            deletes a book from the library
-        
-        Parameter:
-            book_title: The title of the book to delete
-        
-        Return:
-            A string message
-    """
-    if book_title in my_library.keys():
-        deleted_book = my_library.pop(book_title)
-        return f"\n{deleted_book}\nThis book has been deleted succesfully"
-    return f"Failed to delete the book '{book_title}'. The book '{book_title}' is not in our library"
+    return books_db.delete_book_from_db(book_title)
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run("books_library_main:app", port=8000, reload=True)
