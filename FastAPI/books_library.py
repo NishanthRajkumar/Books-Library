@@ -3,7 +3,7 @@ import pyodbc
 class BooksDB():
 
     def __init__(self) -> None:
-        self.db_conn = pyodbc.connect('DSN=ms sql;')
+        self.db_conn = pyodbc.connect('DSN=mssqldsn;')
         self.cursor = self.db_conn.cursor()
         self.cursor.execute("use books_library")
 
@@ -20,8 +20,8 @@ class BooksDB():
             rows = self.cursor.fetchall() 
             table_row_list = {row[0]:list(row) for row in rows}
             return table_row_list
-        except:
-            return "Failed to execute query"
+        except Exception as e:
+            return f"Failed to execute query: {e}"
     
     def get_book_from_db(self, title: str) -> dict|str:
         """
@@ -41,8 +41,8 @@ class BooksDB():
             if len(table_row_list) == 0:
                 return f"'{title}' could not be found in Library"
             return table_row_list
-        except:
-            return "Failed to execute query"
+        except Exception as e:
+            return f"Failed to execute query: {e}"
     
     def add_book_to_db(self, title: str, author: str, pub_date: str, qty: int) -> str:
         """
@@ -60,10 +60,12 @@ class BooksDB():
         """
         try:
             self.cursor.execute(f"insert into books values('{title}', '{author}', '{pub_date}', {qty})")
-            self.db_conn.commit()
             return "Succesfully executed"
-        except:
-            return "Failed to execute query"
+        except Exception as e:
+            self.db_conn.rollback()
+            return f"Failed to execute query: {e}"
+        finally:
+            self.db_conn.commit()
     
     def update_book_in_db(self, old_title: str,new_title: str, author: str, pub_date: str, qty: int) -> str:
         """
@@ -82,10 +84,12 @@ class BooksDB():
         """
         try:
             self.cursor.execute(f"update books set book_title = '{new_title}', author = '{author}', published_date = '{pub_date}', quantity = {qty} where book_title = '{old_title}'")
-            self.db_conn.commit()
             return "Succesfully executed"
-        except:
-            return "Failed to execute query"
+        except Exception as e:
+            self.db_conn.rollback()
+            return f"Failed to execute query: {e}"
+        finally:
+            self.db_conn.commit()
     
     def delete_book_from_db(self, title: str) -> str:
         """
@@ -100,7 +104,9 @@ class BooksDB():
         """
         try:
             self.cursor.execute(f"delete from books where book_title = '{title}'")
-            self.db_conn.commit()
             return "Succesfully executed"
-        except:
-            return "Failed to execute query"
+        except Exception as e:
+            self.db_conn.rollback()
+            return f"Failed to execute query: {e}"
+        finally:
+            self.db_conn.commit()

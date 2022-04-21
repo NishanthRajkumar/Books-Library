@@ -49,10 +49,10 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 class Book(BaseModel):
-    author: str
     title: str
-    published_date: str
-    quantity: int|None  = None
+    author: str
+    published_date: str|None
+    quantity: int|None
 
 class Token(BaseModel):
     access_token: str
@@ -60,14 +60,6 @@ class Token(BaseModel):
 
 @app.post("/login", response_model=Token, tags=['Login'])
 def login(formdata: OAuth2PasswordRequestForm = Depends()):
-    """
-        Description:
-            Authenticate the username and password entered
-        
-        Parameter:
-            username: login username as string
-            password: Password as string
-    """
     if formdata.username in library_user.keys():
         if library_user.get(formdata.username)["password"] == formdata.password:
             access_token = create_access_token({"sub": formdata.username})
