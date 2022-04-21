@@ -37,3 +37,41 @@ where author = 'Paul Barry'
 
 -- Display Table
 select * from books
+
+-- Stored proceedure to get all books
+create procedure sp_get_books
+as
+begin
+    select * from books
+end
+
+-- Stored proceedure to get one book by title
+create procedure sp_get_book
+@book_title varchar(50)
+as
+begin
+    select * from books where book_title = @book_title
+end
+
+-- Stored proceedure to add new book to library
+create procedure sp_add_book
+@book_title varchar(50),
+@author varchar(20),
+@published_date date = null,
+@quantity int = 0 
+as
+begin
+    insert into books values(@book_title, @author, @published_date, @quantity)
+end
+
+-- Stored proceedure to update a book in library
+create procedure sp_update_book
+@old_title varchar(50),
+@book_title varchar(50),
+@author varchar(20),
+@published_date date = null,
+@quantity int = 0 
+as
+begin
+    update books set book_title = @book_title, author = @author, published_date = @published_date, quantity = @quantity where book_title = @old_title
+end

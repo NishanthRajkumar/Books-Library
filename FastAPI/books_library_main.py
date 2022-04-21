@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -51,7 +51,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 class Book(BaseModel):
     title: str
     author: str
-    published_date: str|None
+    published_date: date|None
     quantity: int|None
 
 class Token(BaseModel):

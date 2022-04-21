@@ -1,4 +1,5 @@
 import pyodbc
+from datetime import date
 
 class BooksDB():
 
@@ -16,7 +17,7 @@ class BooksDB():
                 returns a Dictionary
         """
         try:
-            self.cursor.execute("select * from books")
+            self.cursor.execute("exec sp_get_books")
             rows = self.cursor.fetchall() 
             table_row_list = {row[0]:list(row) for row in rows}
             return table_row_list
@@ -35,7 +36,7 @@ class BooksDB():
                 returns a Dictionary
         """
         try:
-            self.cursor.execute(f"select * from books where book_title = '{title}'")
+            self.cursor.execute(f"exec sp_get_book '{title}'")
             rows = self.cursor.fetchall() 
             table_row_list = {row[0]:list(row) for row in rows}
             if len(table_row_list) == 0:
@@ -44,7 +45,7 @@ class BooksDB():
         except Exception as e:
             return f"Failed to execute query: {e}"
     
-    def add_book_to_db(self, title: str, author: str, pub_date: str, qty: int) -> str:
+    def add_book_to_db(self, title: str, author: str, pub_date: date, qty: int) -> str:
         """
             Description:
                 Adds a book to the Database
@@ -59,7 +60,7 @@ class BooksDB():
                 returns a string
         """
         try:
-            self.cursor.execute(f"insert into books values('{title}', '{author}', '{pub_date}', {qty})")
+            self.cursor.execute(f"exec sp_add_book '{title}', '{author}', '{pub_date}', {qty}")
             return "Succesfully executed"
         except Exception as e:
             self.db_conn.rollback()
@@ -67,7 +68,7 @@ class BooksDB():
         finally:
             self.db_conn.commit()
     
-    def update_book_in_db(self, old_title: str,new_title: str, author: str, pub_date: str, qty: int) -> str:
+    def update_book_in_db(self, old_title: str,new_title: str, author: str, pub_date: date, qty: int) -> str:
         """
             Description:
                 Updates a book in the Database
@@ -83,7 +84,7 @@ class BooksDB():
                 returns a string
         """
         try:
-            self.cursor.execute(f"update books set book_title = '{new_title}', author = '{author}', published_date = '{pub_date}', quantity = {qty} where book_title = '{old_title}'")
+            self.cursor.execute(f"exec sp_update_book '{old_title}', '{new_title}', '{author}', '{pub_date}', {qty}")
             return "Succesfully executed"
         except Exception as e:
             self.db_conn.rollback()
