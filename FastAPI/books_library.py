@@ -1,6 +1,10 @@
 import pyodbc
 from datetime import date
 
+class DBException(Exception):
+    def __init__(self, msg) -> None:
+        super().__init__(msg)
+
 class BooksDB():
 
     def __init__(self) -> None:
@@ -40,7 +44,7 @@ class BooksDB():
             rows = self.cursor.fetchall() 
             table_row_list = {row[0]:list(row) for row in rows}
             if len(table_row_list) == 0:
-                return f"'{title}' could not be found in Library"
+                raise DBException(f"'{title}' could not be found in Library")
             return table_row_list
         except Exception as e:
             return f"Failed to execute query: {e}"
