@@ -15,7 +15,6 @@ class BooksDB():
         DB = os.environ['CFP_ASQL_DB']
         self.db_conn = pymssql.connect(server=SQL_SERVER, user=USER, password=PWD, database=DB)
         self.cursor = self.db_conn.cursor()
-        #self.cursor.execute("use books_library")
 
     def get_all_books_from_db(self) -> dict|str:
         """

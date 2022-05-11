@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from jose import jwt, JWTError
 import uvicorn
 from books_library import BooksDB 
+import os
 
 app = FastAPI()
 
@@ -19,7 +20,7 @@ library_user = {
 
 
 # openssl rand -hex 32
-SECRET_KEY = "b06c4ea62b387382b4a5e1597ae9c92b520254fcbec19f894ac0912fa0f61d7c"
+SECRET_KEY = os.environ['SECRET_KEY']
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
