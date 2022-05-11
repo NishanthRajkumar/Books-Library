@@ -1,4 +1,5 @@
-import pyodbc
+import pymssql
+import os
 from datetime import date
 
 class DBException(Exception):
@@ -8,9 +9,13 @@ class DBException(Exception):
 class BooksDB():
 
     def __init__(self) -> None:
-        self.db_conn = pyodbc.connect('DSN=mssqldsn;')
+        SQL_SERVER = os.environ['CFP_ASQL_server']
+        USER = os.environ['CFP_ASQL_user']
+        PWD = os.environ['CFP_ASQL_password']
+        DB = os.environ['CFP_ASQL_DB']
+        self.db_conn = pymssql.connect(server=SQL_SERVER, user=USER, password=PWD, database=DB)
         self.cursor = self.db_conn.cursor()
-        self.cursor.execute("use books_library")
+        #self.cursor.execute("use books_library")
 
     def get_all_books_from_db(self) -> dict|str:
         """
