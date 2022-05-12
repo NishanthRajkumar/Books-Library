@@ -69,12 +69,12 @@ class BooksDB():
         """
         try:
             self.cursor.execute(f"exec sp_add_book '{title}', '{author}', '{pub_date}', {qty}")
-            return "Succesfully executed"
         except Exception as e:
             self.db_conn.rollback()
             return f"Failed to execute query: {e}"
-        finally:
+        else:
             self.db_conn.commit()
+            return "Succesfully executed"
     
     def update_book_in_db(self, old_title: str,new_title: str, author: str, pub_date: date, qty: int) -> str:
         """
@@ -93,12 +93,12 @@ class BooksDB():
         """
         try:
             self.cursor.execute(f"exec sp_update_book '{old_title}', '{new_title}', '{author}', '{pub_date}', {qty}")
-            return "Succesfully executed"
         except Exception as e:
             self.db_conn.rollback()
             return f"Failed to execute query: {e}"
-        finally:
+        else:
             self.db_conn.commit()
+            return "Succesfully executed"
     
     def delete_book_from_db(self, title: str) -> str:
         """
@@ -113,9 +113,9 @@ class BooksDB():
         """
         try:
             self.cursor.execute(f"delete from books where book_title = '{title}'")
-            return "Succesfully executed"
         except Exception as e:
             self.db_conn.rollback()
             return f"Failed to execute query: {e}"
-        finally:
+        else:
             self.db_conn.commit()
+            return "Succesfully executed"
